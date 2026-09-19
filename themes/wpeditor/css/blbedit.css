@@ -1,0 +1,99 @@
+@media screen and (min-width: 1020px){
+a.topnav-button{
+    color: #FFF;
+    background: #555;
+}
+a.topnav-button:hover{
+    color: #FFF;
+    background: #003a4c;
+}
+.container {
+    width: 1200px;
+    max-width: 1200px;
+}
+.row-container-blb{
+    width: 1230px;
+    max-width: 1230px;
+    margin-right: auto;
+    margin-left: auto;
+    padding-left: 10px;
+    padding-right: 10px;
+    border-left: 1px solid #333;
+    border-right: 1px solid #333;
+}
+
+ul#primary-menu, ul#secondary-menu{
+    display: flex;
+    justify-content: center;
+}
+ul#primary-menu li > a{
+    font-weight: bold;
+}
+.main-navigation #secondary-menu {
+    border-top: 3px solid #DDD;
+}
+.gmr-big-headline1foto {
+    position: relative;
+    display: block;
+    width: 100%;
+    margin: 0 0px 0 0;
+}
+.box-item .post-thumbnail{
+    width: 190px;
+    height: 110px;
+}
+
+.gmr-big-headline1foto .gmr-bigheadline-content{
+    position: absolute;
+    padding: 15px 15px;
+    bottom: 0px;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+/*.gmr-big-headline1foto .gmr-bigheadline-content .gmr-meta-topic{display: none;}*/
+.gmr-big-headline1foto .gmr-bigheadline-content .gmr-meta-topic span.cat-links-content a{color: #EEE}
+.gmr-big-headline1foto .gmr-bigheadline-content .gmr-meta-topic span.meta-content{color: #CCC}
+.gmr-big-headline1foto .gmr-bigheadline-content .entry-content{display: none;}
+.gmr-big-headline1foto .gmr-bigheadline-content h3 a{
+    color: white;  text-shadow: 5px 1px 5px #000;
+    font-size: 24pt;
+}
+.gmr-topnavwrap{position: absolute;}
+div#page.site{margin-top: 46px;}
+nav#main-nav.main-navigation{
+    transition: 0.6s;
+}
+}
+
+#primary-menu {
+    background-color: #005b78;
+    /* background: #FFF; */
+    background-image: linear-gradient(#003a4c, #005b78);
+}
+.gmr-mainmenu ul > li > a{
+    color: #fff;
+}
+.gmr-mainmenu ul > li > a:hover{
+    background: #333;
+    color: white;
+}
+.main-navigation ul#secondary-menu > li > a:hover {
+    background: #333;
+    color: white;
+}
+.site-branding{
+    justify-content: center;
+}
+.site-footer .wpberita-rp-widget a{color: #333}
+.entry-content-single p {
+
+    font-size: 13pt;
+}
+h2.entry-title {
+    font-weight: bold;
+    font-size: 22px;
+}
+
+span.cat-links-content a{
+    color: #06447f;
+}
+.modulehome-wrap{margin-bottom: 0px;}

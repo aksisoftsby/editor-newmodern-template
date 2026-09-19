@@ -1,0 +1,153 @@
+<?php
+
+use Automattic\Jetpack\Stats\WPCOM_Stats;
+
+add_filter('manage_post_posts_columns', function ($columns) {
+    return array_merge($columns, ['view' => "View"]);
+});
+
+add_action('manage_post_posts_custom_column', function ($column_key, $post_id) {
+    if ($column_key == 'view') {
+        # $v = get_post_meta($post_id, 'postview', true);
+        # echo $v ? $v : 0;
+        echo '<a href="https://wordpress.com/stats/post/' . $post_id . '/editor.id" '
+            . 'target="_blank">' . jp_post_views_display($post_id) . '</a>';
+    }
+}, 10, 2);
+
+
+/**
+ * Retrieve Post Views for a post, using the WordPress.com Stats API.
+ *
+ * @since 1.0.0
+ *
+ * @param string $post_id Post ID.
+ *
+ * @return array $view Post View.
+ */
+function jp_post_views_get_view($post_id)
+{
+    // Start with an empty array.
+    $view = array();
+
+    // Get the data for a specific post.
+    $stats = jp_post_views_convert_stats_array_to_object(
+        (new WPCOM_Stats())->get_post_views((int) $post_id)
+    );
+
+    // Process that data.
+    if (
+        isset($stats)
+        && !empty($stats)
+        && isset($stats->views)
+    ) {
+        $view = array(
+            'total'     => $stats->views,
+            'cached_at' => isset($stats->cached_at) ? $stats->cached_at : '',
+        );
+        update_post_meta($post_id, '_post_views', $view);
+    }
+
+    return $view;
+}
+
+/**
+ * Retrieve all time stats for your site.
+ *
+ * @since 1.0.0
+ *
+ * @return string $views All time views for that site.
+ */
+function jp_post_views_get_all_views()
+{
+    // Start with an empty array.
+    $views = array();
+
+    // Get the data.
+    $stats = jp_post_views_convert_stats_array_to_object(
+        (new WPCOM_Stats())->get_stats(array('fields' => 'stats'))
+    );
+
+    if (
+        isset($stats)
+        && !empty($stats)
+        # && isset($stats->stats)
+        && isset($stats->views)
+    ) {
+        $views = array(
+            'total'     => $stats->stats->views,
+            'cached_at' => isset($stats->cached_at) ? $stats->cached_at : '',
+        );
+    }
+
+    return $views;
+}
+
+/**
+ * Create a shortcode to display a post view inside a post.
+ * Shortcode format is [jp_post_view]
+ *
+ * @since 1.0.0
+ *
+ * @return string $view Total number of views for that post.
+ */
+function jp_post_views_display($post_id)
+{
+    // Get the post ID.
+    # $post_id = get_the_ID();
+
+    if (!isset($post_id) || empty($post_id)) {
+        return;
+    }
+
+    // Get the number of views for that post.
+    $views = jp_post_views_get_view($post_id);
+
+    if (isset($views) && !empty($views)) {
+        $view = sprintf(
+            esc_html(
+                _n(
+                    '%s view',
+                    '%s views',
+                    $views['total'],
+                    'post-views-for-jetpack'
+                )
+            ),
+            number_format_i18n($views['total'])
+        );
+    } else {
+        $view = esc_html__('no views', 'post-views-for-jetpack');
+    }
+
+    /**
+     * Filter the output of the shortcode.
+     *
+     * @since 1.0.0
+     *
+     * @param string $view    Phrase outputting the number of views.
+     * @param array  $views   Number of views.
+     * @param string $post_id Post ID.
+     */
+    return apply_filters('jp_post_views_output', $view, $views, $post_id);
+}
+
+/**
+ * Convert stats array to object after sanity checking the array is valid.
+ * Lifted from Jetpack.
+ * @see https://github.com/Automattic/jetpack/blob/8a79f5e319d5da58de1b8f0bda863957b938bf21/projects/plugins/jetpack/modules/stats.php#L1522-L1538
+ *
+ * @param  array $stats_array The stats array.
+ * @return WP_Error|Object|null
+ */
+function jp_post_views_convert_stats_array_to_object($stats_array)
+{
+    if (is_wp_error($stats_array)) {
+        return $stats_array;
+    }
+    $encoded_array = wp_json_encode($stats_array);
+    if (!$encoded_array) {
+        return new WP_Error('stats_encoding_error', 'Failed to encode stats array');
+    }
+    # var_dump($encoded_array);
+    return json_decode($encoded_array);
+}
