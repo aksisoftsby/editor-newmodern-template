@@ -13,8 +13,21 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Check Theme
+        id: check
+        run: |
+          echo "Commit: $GITHUB_SHA"
+          echo "Files:"
+          find themes/wpeditor -type f | sort | head -50
+
+          echo "Check functions.php:"
+          sha256sum themes/wpeditor/functions.php
+
+          # Save the local hash so the Verify step can compare automatically.
+          echo "sha=$(sha256sum themes/wpeditor/functions.php | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+
       - name: Upload Theme
-        uses: appleboy/scp-action@v0.1.7
+        uses: appleboy/scp-action@v1
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
@@ -27,3 +40,30 @@ jobs:
           strip_components: 1
           # Re-uploads must replace existing files.
           overwrite: true
+
+      - name: Verify Theme
+        uses: appleboy/ssh-action@v1
+        env:
+          EXPECTED_SHA: ${{ steps.check.outputs.sha }}
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          port: 22
+          envs: EXPECTED_SHA
+          script: |
+            TARGET=/var/www/html/edi/newwordpress/wp-content/themes/wpeditor/functions.php
+
+            echo "Remote functions.php:"
+            sha256sum $TARGET
+
+            echo "Modified:"
+            stat $TARGET
+
+            REMOTE_SHA=$(sha256sum $TARGET | cut -d' ' -f1)
+            if [ "$REMOTE_SHA" = "$EXPECTED_SHA" ]; then
+              echo "✅ Hash match: functions.php on the VPS is the latest version from this commit."
+            else
+              echo "❌ Hash mismatch! remote=$REMOTE_SHA expected=$EXPECTED_SHA"
+              exit 1
+            fi
